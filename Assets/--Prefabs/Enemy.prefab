@@ -123,9 +123,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 1
-  bounciness: 400
+  bounciness: 500
   knockbackForce: 400
-  upwardForce: 100
+  upwardForce: 300
   damageGiven: 1
 --- !u!50 &7210747325219246067
 Rigidbody2D:
