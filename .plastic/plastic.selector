@@ -1,0 +1,4 @@
+repository "SPDprojekt@miyond@cloud"
+  path "/"
+    br "/main"
+    co "/main"
