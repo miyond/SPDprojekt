@@ -9,18 +9,20 @@ TagManager:
   - Enemy
   - Bunny
   - Health
+  - Trap
+  - Wall
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Background
   - Water
   - UI
   - Ground
   - Enemy
   - EnemyBlock
   - Player
-  - 
+  - Wall
   - 
   - 
   - 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -11,8 +12,9 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private Transform leftFoot, rightFoot;
     [SerializeField] private Transform spawnPosition;
     [SerializeField] private LayerMask whatIsGround;
+    [SerializeField] private Transform wallCheck;
+    [SerializeField] private LayerMask wallLayer;
     [SerializeField] private AudioClip jumpSound, pickupSound;
-
     [SerializeField] private Slider healthSlider;
     [SerializeField] private Image fillColor;
     [SerializeField] private Color orangeHealth, redHealth;
@@ -23,9 +25,22 @@ public class PlayerMovement : MonoBehaviour
     private float rayDistance = 0.25f;
     private bool isOnGround;
     private bool canMove;
+//Wall sliding
+    private bool isWallSliding;
+    private float wallSlidingSpeed = 2.5f;
+//Wall jumping
+
+    /* private bool isWallJumping;
+    private float wallJumpingDirection;
+    private float wallJumpingTime = 0.2f;
+    private float wallJumpingCounter;
+    private float wallJumpingDuration = 0.4f;
+    private Vector2 wallJumpingPower = new Vector2(8f, 16f); */
+
+//Health and collectibles
     private int startingHealth = 3;
     private int currentHealth = 0;
-    private int bunniesCollected = 0;
+    public int bunniesCollected = 0;
 
     private Rigidbody2D rigibod;
     private SpriteRenderer rend;
@@ -48,7 +63,7 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update(){
 
-        //Move left and right
+        //Move left and rightCheckIfOnGroundIs
         
         horizontalValue = Input.GetAxis("Horizontal");
 
@@ -62,9 +77,6 @@ public class PlayerMovement : MonoBehaviour
             FlipSprite(false);
         }
 
-        
-
-        //Jump
 
 
         if(Input.GetButtonDown("Jump") && CheckIfOnGround() == true) {
@@ -72,9 +84,13 @@ public class PlayerMovement : MonoBehaviour
             Jump();
         }
 
-        anim.SetFloat("MoveSpeed", Mathf.Abs(rigibod.velocity.x ));
+        anim.SetFloat("MoveSpeed", Mathf.Abs(rigibod.velocity.x));
         anim.SetFloat("VerticalSpeed", rigibod.velocity.y);
         anim.SetBool("IsGrounded", CheckIfOnGround());
+
+
+        WallSlide();
+        //WallJump();
 
 
     }
@@ -106,7 +122,6 @@ public class PlayerMovement : MonoBehaviour
             RestoreHealth(other.gameObject);
         }
     }
-
     private void FlipSprite(bool direction){
 
         rend.flipX = direction;
@@ -119,6 +134,57 @@ public class PlayerMovement : MonoBehaviour
         audioSource.PlayOneShot(jumpSound, 0.3f);
 
     }
+
+    /* private void WallJump()
+    {
+
+        if(isWallSliding){
+            
+            isWallJumping = false;
+            wallJumpingCounter = wallJumpingTime;
+
+            CancelInvoke(nameof(StopWallJumping));
+
+        }else{
+
+            wallJumpingCounter -= Time.deltaTime;
+        }
+
+        if (Input.GetButtonDown("Jump") && wallJumpingCounter > 0f){
+
+            isWallJumping = true;
+            rigibod.velocity = new Vector2(wallJumpingDirection * wallJumpingPower.x, wallJumpingPower.y);
+            wallJumpingCounter = 0f;
+
+        }
+
+        Invoke(nameof(StopWallJumping), wallJumpingDuration);
+    } 
+
+}
+
+    private void StopWallJumping(){
+
+        isWallJumping = false;
+    } */
+
+    private bool IsWalled(){
+
+        return Physics2D.OverlapCircle(wallCheck.position, 0.6f, wallLayer);
+
+    }
+
+    private void WallSlide(){
+
+        if(IsWalled() && !CheckIfOnGround() && horizontalValue != 0f){
+
+            isWallSliding = true;
+            rigibod.velocity = new Vector2(rigibod.velocity.x, Mathf.Clamp(rigibod.velocity.y, -wallSlidingSpeed, float.MaxValue));
+        }else{
+
+            isWallSliding = false;
+        }
+    }
     public void TakeDamage(int damageAmount){
 
         currentHealth -= damageAmount;
@@ -130,7 +196,6 @@ public class PlayerMovement : MonoBehaviour
         }
 
     }
-
     public void TakeKnockback(float knockbackForce, float upwards){
 
         canMove = false;
@@ -138,21 +203,19 @@ public class PlayerMovement : MonoBehaviour
         Invoke("CanMoveAgain", 0.25f);
 
     }
-
     private void CanMoveAgain(){
 
         canMove = true;
     }
+    public void Respawn(){
 
-    private void Respawn(){
-
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         currentHealth = startingHealth;
         UpdateHealthBar();
         transform.position = spawnPosition.position;
         rigibod.velocity = Vector2.zero;
 
     }
-
     private void RestoreHealth(GameObject healthPickup){
 
         if(currentHealth >= startingHealth){
@@ -184,7 +247,6 @@ public class PlayerMovement : MonoBehaviour
 
         }
     }
-   
     private bool CheckIfOnGround(){
         RaycastHit2D leftHit = Physics2D.Raycast(leftFoot.position, Vector2.down, rayDistance, whatIsGround);
         RaycastHit2D rightHit = Physics2D.Raycast(rightFoot.position, Vector2.down, rayDistance, whatIsGround);
@@ -198,4 +260,5 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 }
+
 
