@@ -14,7 +14,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private LayerMask whatIsGround;
     [SerializeField] private Transform wallCheck;
     [SerializeField] private LayerMask wallLayer;
-    [SerializeField] private AudioClip jumpSound, pickupSound;
+    [SerializeField] private AudioClip jumpSound, pickupSound, slidingSound;
+    [SerializeField] private GameObject slidingParticles;
     [SerializeField] private Slider healthSlider;
     [SerializeField] private Image fillColor;
     [SerializeField] private Color orangeHealth, redHealth;
@@ -90,6 +91,7 @@ public class PlayerMovement : MonoBehaviour
 
 
         WallSlide();
+
         //WallJump();
 
 
@@ -171,6 +173,7 @@ public class PlayerMovement : MonoBehaviour
     private bool IsWalled(){
 
         return Physics2D.OverlapCircle(wallCheck.position, 0.6f, wallLayer);
+        audioSource.PlayOneShot(slidingSound, 0.2f);
 
     }
 
@@ -178,11 +181,15 @@ public class PlayerMovement : MonoBehaviour
 
         if(IsWalled() && !CheckIfOnGround() && horizontalValue != 0f){
 
+            
             isWallSliding = true;
             rigibod.velocity = new Vector2(rigibod.velocity.x, Mathf.Clamp(rigibod.velocity.y, -wallSlidingSpeed, float.MaxValue));
+            Instantiate(slidingParticles, transform.position, Quaternion.identity);
+
         }else{
 
             isWallSliding = false;
+            
         }
     }
     public void TakeDamage(int damageAmount){
