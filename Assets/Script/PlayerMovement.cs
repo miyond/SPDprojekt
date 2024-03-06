@@ -14,7 +14,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private LayerMask whatIsGround;
     [SerializeField] private Transform wallCheck;
     [SerializeField] private LayerMask wallLayer;
-    [SerializeField] private AudioClip jumpSound, pickupSound, slidingSound;
+    [SerializeField] private AudioClip jumpSound, pickupSound, slidingSound, takeHitSound, dieSound, slimeSound;
     [SerializeField] private GameObject slidingParticles;
     [SerializeField] private Slider healthSlider;
     [SerializeField] private Image fillColor;
@@ -115,13 +115,18 @@ public class PlayerMovement : MonoBehaviour
             bunniesCollected++;
             bunnyText.text = "" + bunniesCollected;
             audioSource.pitch = Random.Range(0.8f, 1.2f);
-            audioSource.PlayOneShot(pickupSound, 0.4f);
+            audioSource.PlayOneShot(pickupSound, 0.6f);
             
         }
 
         if(other.CompareTag("Health")){
 
             RestoreHealth(other.gameObject);
+            
+        }
+
+        if(other.CompareTag("Enemy")){
+            audioSource.PlayOneShot(slimeSound, 0.5f);
         }
     }
     private void FlipSprite(bool direction){
@@ -137,43 +142,11 @@ public class PlayerMovement : MonoBehaviour
 
     }
 
-    /* private void WallJump()
-    {
-
-        if(isWallSliding){
-            
-            isWallJumping = false;
-            wallJumpingCounter = wallJumpingTime;
-
-            CancelInvoke(nameof(StopWallJumping));
-
-        }else{
-
-            wallJumpingCounter -= Time.deltaTime;
-        }
-
-        if (Input.GetButtonDown("Jump") && wallJumpingCounter > 0f){
-
-            isWallJumping = true;
-            rigibod.velocity = new Vector2(wallJumpingDirection * wallJumpingPower.x, wallJumpingPower.y);
-            wallJumpingCounter = 0f;
-
-        }
-
-        Invoke(nameof(StopWallJumping), wallJumpingDuration);
-    } 
-
-}
-
-    private void StopWallJumping(){
-
-        isWallJumping = false;
-    } */
 
     private bool IsWalled(){
 
         return Physics2D.OverlapCircle(wallCheck.position, 0.6f, wallLayer);
-        audioSource.PlayOneShot(slidingSound, 0.2f);
+        
 
     }
 
@@ -185,21 +158,26 @@ public class PlayerMovement : MonoBehaviour
             isWallSliding = true;
             rigibod.velocity = new Vector2(rigibod.velocity.x, Mathf.Clamp(rigibod.velocity.y, -wallSlidingSpeed, float.MaxValue));
             Instantiate(slidingParticles, transform.position, Quaternion.identity);
+            
 
         }else{
 
             isWallSliding = false;
+            
             
         }
     }
     public void TakeDamage(int damageAmount){
 
         currentHealth -= damageAmount;
+        audioSource.PlayOneShot(takeHitSound, 0.5f);
         UpdateHealthBar();
 
         if(currentHealth <= 0){
-
-            Respawn();
+            
+            audioSource.PlayOneShot(dieSound, 0.3f);
+            anim.SetTrigger("Death");
+            Invoke("Respawn", 5f);
         }
 
     }
@@ -216,6 +194,8 @@ public class PlayerMovement : MonoBehaviour
     }
     public void Respawn(){
 
+
+        
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         currentHealth = startingHealth;
         UpdateHealthBar();
@@ -232,6 +212,7 @@ public class PlayerMovement : MonoBehaviour
             int healthToRestore = healthPickup.GetComponent<HealthPickup>().healthAmount;
             currentHealth += healthToRestore;
             UpdateHealthBar();
+            audioSource.PlayOneShot(pickupSound, 0.6f);
             Destroy(healthPickup);
 
             if(currentHealth >= startingHealth){

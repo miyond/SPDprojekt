@@ -9,11 +9,21 @@ public class EnemyMovement : MonoBehaviour
     [SerializeField] private float knockbackForce = 200f;
     [SerializeField] private float upwardForce = 100f;
     [SerializeField] private int damageGiven = 1;
+    [SerializeField] private float Hitpoints;
+    [SerializeField] private float MaxHitpoints = 3;
+
+   // [SerializeField] private AudioClip slimeSound;
+    
     private SpriteRenderer rend;
+    private Animator anim;
+    //private AudioSource audioSource;
 
     private void Start()
     {
         rend = GetComponent<SpriteRenderer>();
+        Hitpoints = MaxHitpoints;
+        anim = GetComponent<Animator>();
+        //audioSource = GetComponent<AudioSource>();
     }
 
 
@@ -58,7 +68,16 @@ public class EnemyMovement : MonoBehaviour
         }
 
         }
-    
+      public void TakeHit(float damage){
+
+        Hitpoints -= damage;
+        if(Hitpoints <= 0){
+
+            Destroy(gameObject);
+        }
+        
+    }
+
 
     private void OnTriggerEnter2D(Collider2D other){
 
@@ -66,7 +85,12 @@ public class EnemyMovement : MonoBehaviour
 
             other.GetComponent<Rigidbody2D>().velocity = new Vector2(other.GetComponent<Rigidbody2D>().velocity.x, 0);
             other.GetComponent<Rigidbody2D>().AddForce(new Vector2(0, bounciness));
-            Destroy(gameObject);
-        }
-    }
+            TakeHit(1);
+            
+            
+        
+        
+        
+}
+}
 }
