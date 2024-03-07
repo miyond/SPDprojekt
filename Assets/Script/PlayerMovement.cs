@@ -48,6 +48,7 @@ public class PlayerMovement : MonoBehaviour
     private Animator anim;
     private AudioSource audioSource;
     
+    
 
     // Start is called before the first frame update
     void Start()
@@ -158,11 +159,16 @@ public class PlayerMovement : MonoBehaviour
             isWallSliding = true;
             rigibod.velocity = new Vector2(rigibod.velocity.x, Mathf.Clamp(rigibod.velocity.y, -wallSlidingSpeed, float.MaxValue));
             Instantiate(slidingParticles, transform.position, Quaternion.identity);
-            
+            anim.SetBool("Sliding", true);
+
+            if(!audioSource.isPlaying)
+            audioSource.Play();
 
         }else{
 
             isWallSliding = false;
+            audioSource.Stop();
+            anim.SetBool("Sliding", false);
             
             
         }
